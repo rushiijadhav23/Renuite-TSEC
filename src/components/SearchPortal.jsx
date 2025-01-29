@@ -12,53 +12,128 @@ function SearchPortal() {
   const [aadharNumber, setAadharNumber] = useState("");
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [searchResults, setSearchResults] = useState(null);
   const webcamRef = useRef(null);
+  const [data, setData] = useState(null);
+  
+  // Separate message states for each section
+  const [imageSearchMessage, setImageSearchMessage] = useState(null);
+  const [imageMessageType, setImageMessageType] = useState('error');
+  const [aadharSearchMessage, setAadharSearchMessage] = useState(null);
+  const [aadharMessageType, setAadharMessageType] = useState('error');
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
-        setError('Please upload an image file');
+        setImageSearchMessage('Please upload an image file');
+        setImageMessageType('error');
         return;
       }
       
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setError('Image size should be less than 5MB');
+        setImageSearchMessage('Image size should be less than 5MB');
+        setImageMessageType('error');
         return;
       }
 
-      setError(null);
       setSelectedFile(file);
       setSelectedImage(URL.createObjectURL(file));
       setIsCameraOpen(false);
       setSearchResults(null);
+      setImageSearchMessage(null);
     }
   };
 
   const handleUploadToAPI = async () => {
     if (!selectedFile) {
-      setError('Please select an image first');
+      setImageSearchMessage('Please select an image first');
+      setImageMessageType('error');
       return;
     }
 
     setIsLoading(true);
-    setError(null);
+    setImageSearchMessage(null);
     const formData = new FormData();
     formData.append('image', selectedFile);
 
     try {
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        });
+      });
+
+      formData.append('latitude', position.coords.latitude);
+      formData.append('longitude', position.coords.longitude);
+
       const response = await fetch(`${API_BASE_URL}/search_missing`, {
         method: 'POST',
         body: formData,
         headers: {
           'Accept': 'application/json',
-          // Don't set Content-Type header - let the browser set it with boundary
         }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data_input = await response.json();
+      
+      if (data_input.matches_found) {
+        console.log('Search successful:', data_input);
+        setSearchResults(data_input.results);
+        setData(data_input);
+        setImageSearchMessage('Found a match!');
+        setImageMessageType('success');
+      } else {
+        console.error('Search failed:', data_input);
+        setData(data_input);
+        setImageSearchMessage(data_input.message || 'No matches found.');
+        setImageMessageType('error');
+        setSearchResults(null);
+      }
+
+    } catch (error) {
+      console.error('Error:', error);
+      if (error.code === 1) {
+        setImageSearchMessage('Please enable location access to continue');
+      } else if (error.code === 2) {
+        setImageSearchMessage('Location information is unavailable');
+      } else if (error.code === 3) {
+        setImageSearchMessage('Location request timed out');
+      } else {
+        setImageSearchMessage('Failed to upload image. Please try again.');
+      }
+      setImageMessageType('error');
+      setSearchResults(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAadhaarSearch = async () => {
+    if (!aadharNumber) {
+      setAadharSearchMessage('Please enter an Aadhaar number');
+      setAadharMessageType('error');
+      return;
+    }
+
+    setIsLoading(true);
+    setAadharSearchMessage(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/search_by_aadhaar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ aadhaar_number: aadharNumber })
       });
 
       if (!response.ok) {
@@ -67,18 +142,36 @@ function SearchPortal() {
 
       const data = await response.json();
       
-      if (data.success) {
-        setSearchResults(data.results);
-        setError(null);
-      } else {
-        setError(data.message || 'Search failed. Please try again.');
-        setSearchResults(null);
+      let statusMessage;
+      switch(data.status) {
+        case 'missing':
+          statusMessage = 'Person is reported missing';
+          setAadharMessageType('error');
+          break;
+        case 'sighted':
+          statusMessage = 'Person was last sighted';
+          setAadharMessageType('warning');
+          break;
+        case 'found':
+          statusMessage = 'Person has been found';
+          setAadharMessageType('success');
+          break;
+        case 'neverlost':
+          statusMessage = 'No missing person record found';
+          setAadharMessageType('info');
+          break;
+        default:
+          statusMessage = 'Status unknown';
+          setAadharMessageType('error');
       }
 
+      setAadharSearchMessage(statusMessage);
+      setData(data);
+
     } catch (error) {
-      console.error('Error uploading image:', error);
-      setError('Failed to upload image. Please try again.');
-      setSearchResults(null);
+      console.error('Error:', error);
+      setAadharSearchMessage('Failed to search. Please try again.');
+      setAadharMessageType('error');
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +181,7 @@ function SearchPortal() {
     setIsCameraOpen(true);
     setSelectedImage(null);
     setSelectedFile(null);
-    setError(null);
+    setImageSearchMessage(null);
     setSearchResults(null);
   };
 
@@ -98,20 +191,26 @@ function SearchPortal() {
       setSelectedImage(imageSrc);
       setIsCameraOpen(false);
       
-      // Convert base64 to file
       fetch(imageSrc)
         .then(res => res.blob())
         .then(blob => {
           const file = new File([blob], "captured-image.jpg", { type: "image/jpeg" });
           setSelectedFile(file);
+          setImageSearchMessage('Image captured successfully!');
+          setImageMessageType('success');
         })
         .catch(err => {
-          setError('Failed to process captured image');
+          setImageSearchMessage('Failed to process captured image');
+          setImageMessageType('error');
           console.error(err);
         });
     }
   };
 
+  const handleAadharInputChange = (e) => {
+    setAadharNumber(e.target.value);
+    setAadharSearchMessage(null);
+  };
   return (
     <div className="bg-gradient-to-b from-[#CDC1FF] to-white min-h-screen p-10">
       <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-2xl p-6">
@@ -119,7 +218,7 @@ function SearchPortal() {
           Search for Missing Persons
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Search by Image */}
+          {/* Image Search Section */}
           <div className="p-6 border border-[#A294F9] rounded-xl text-center">
             {!selectedImage && !isCameraOpen && (
               <div className="flex justify-center">
@@ -188,20 +287,25 @@ function SearchPortal() {
                 </label>
               </div>
             )}
-            {error && (
-              <div className="text-red-500 mt-2 p-2 bg-red-50 rounded">
-                {error}
+            {imageSearchMessage && (
+              <div className={`mt-2 p-2 rounded ${
+                imageMessageType === 'success' ? 'bg-green-50 text-green-600' : 
+                imageMessageType === 'error' ? 'bg-red-50 text-red-500' :
+                imageMessageType === 'warning' ? 'bg-yellow-50 text-yellow-600' :
+                'bg-blue-50 text-blue-600'
+              }`}>
+                {imageSearchMessage}
               </div>
             )}
             {searchResults && (
               <div className="mt-4 p-4 bg-green-50 rounded">
                 <h3 className="text-green-700 font-semibold">Search Results</h3>
-                {/* Display your search results here */}
+                {/* Add your search results display here */}
               </div>
             )}
           </div>
 
-          {/* Search by Aadhaar section */}
+          {/* Aadhaar Search Section */}
           <div className="p-6 border border-[#A294F9] rounded-xl text-center">
             <div className="flex justify-center">
               <Lottie animationData={animationData1} className="w-34 h-34" />
@@ -214,11 +318,35 @@ function SearchPortal() {
               className="w-full px-4 py-3 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#A294F9]"
               placeholder="Enter Aadhaar Number"
               value={aadharNumber}
-              onChange={(e) => setAadharNumber(e.target.value)}
+              onChange={handleAadharInputChange}
             />
-            <button className="mt-4 bg-[#A294F9] text-white px-6 py-3 rounded-md hover:bg-indigo-700">
-              Search
+            <button 
+              onClick={handleAadhaarSearch}
+              disabled={isLoading}
+              className="mt-4 bg-[#A294F9] text-white px-6 py-3 rounded-md hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2 justify-center">
+                  <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Searching...
+                </span>
+              ) : (
+                'Search'
+              )}
             </button>
+            {aadharSearchMessage && (
+              <div className={`mt-2 p-2 rounded ${
+                aadharMessageType === 'success' ? 'bg-green-50 text-green-600' : 
+                aadharMessageType === 'error' ? 'bg-red-50 text-red-500' :
+                aadharMessageType === 'warning' ? 'bg-yellow-50 text-yellow-600' :
+                'bg-blue-50 text-blue-600'
+              }`}>
+                {aadharSearchMessage}
+              </div>
+            )}
           </div>
         </div>
       </div>

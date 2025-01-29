@@ -40,8 +40,8 @@ function App() {
                       animationData={animationData1}
                     />
                     <FeatureCard
-                      title="Biometric Verification"
-                      description="Secure identification using advanced biometric technology."
+                      title="Facial Verification"
+                      description="Secure identification using advanced facial verification."
                       animationData={animationData2}
                     />
                   </div>

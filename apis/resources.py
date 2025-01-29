@@ -5,7 +5,7 @@ import cv2
 from flask_restful import Resource, Api
 from flask_cors import cross_origin
 from werkzeug.security import generate_password_hash,check_password_hash
-from models import User, db, Aadhaar, Profile, Missing
+from models import User, db, Aadhaar, Profile, Missing, Sighting
 import os
 from werkzeug.utils import secure_filename
 import jwt
@@ -223,7 +223,7 @@ class AadhaarData(Resource):
     def post(self):
         try:
             # Ensure upload folder exists
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            os.makedirs('database_photos', exist_ok=True)
 
             # Get form data
             aadhaarno = request.form.get('aadhaarno')
@@ -325,7 +325,7 @@ class ReportMissing(Resource):
     def post(self, current_user):
         try:
             # Ensure upload folder exists
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            os.makedirs('missing_photos', exist_ok=True)
 
             # Get form data
             missing_aadhaar = request.form.get('missing_aadhaar')
@@ -334,6 +334,7 @@ class ReportMissing(Resource):
             characteristics = request.form.get('characteristics')
             contactno = request.form.get('contactno')
             email = request.form.get('email')
+            
 
             # Validation checks
             if not all([missing_aadhaar, missingdate, missingplace, contactno, email]):
@@ -376,7 +377,7 @@ class ReportMissing(Resource):
                 contactno=contactno,
                 email=email,
                 characteristics=characteristics,
-                status='active'
+                status='missing'
             )
 
             db.session.add(new_missing)
@@ -417,39 +418,7 @@ api.add_resource(ReportMissing, '/report_missing')
 #         return jsonify({
 #             "error": str(e)
 #         }), 400
-class Search(Resource):
-    def get(self):  # Added self parameter
-        try:
-            # Specify the path to your database folder
-            db_path = "database_photos"
-            
-            # Use DeepFace.find() to search for matches in the database folder
-            results = DeepFace.find(
-                img_path="r3.jpeg",
-                db_path=db_path
-            )
-            
-            # The results will be a list of pandas DataFrames containing matches
-            if len(results) > 0 and not results[0].empty:
-                response = jsonify({
-                    "matches_found": True,
-                    "number_of_matches": len(results[0]),
-                    "matched_files": results[0]["identity"].tolist()
-                })
-            else:
-                response = jsonify({
-                    "matches_found": False,
-                    "message": "No matches found in database"
-                })
-            return response
-                
-        except Exception as e:
-            return jsonify({
-                "error": str(e)
-            })
 
-
-api.add_resource(Search,'/search')
 
 # Convert the function to a class-based resource
 class SearchZonesResource(Resource):
@@ -503,8 +472,9 @@ api.add_resource(Image, '/image')
 class MissingList(Resource):
     def get(self):
         missing = Missing.query.all()
-        print(missing[0].missing_aadhaar)
-        print([m.serialize() for m in missing])
+        print(missing)
+        # print(missing[0].missing_aadhaar)
+        # print([m.serialize() for m in missing])
         return make_response(jsonify({'missing': [m.serialize() for m in missing]}), 200)
     
 api.add_resource(MissingList, '/missing')
@@ -512,10 +482,131 @@ api.add_resource(MissingList, '/missing')
 class SearchMissing(Resource):
     def post(self):
         data = request.files['image']
+        # get formData
+        lat = request.form.get('latitude')
+        long = request.form.get('longitude')
+        print("hi")
         print(data)
-        return "hi"
+        try:
+            # Specify the path to your database folder
+            db_path = "missing_photos"
+            # svae file
+            data.save("search.jpeg")
+            
+            # Use DeepFace.find() to search for matches in the database folder
+            results = DeepFace.find(
+                img_path='search.jpeg',
+                db_path=db_path
+            )
+            
+            # The results will be a list of pandas DataFrames containing matches
+            if len(results) > 0 and not results[0].empty:
+                missing = Missing.query.filter_by(missingphoto=results[0]["identity"][0]).first()
+                try:
+                    missing.status = "sighted"
+                    missingid=missing.missingid
+                    db.session.commit()
+                
+                    sighting = Sighting(missingid=missingid,sightingdate=datetime.now(),sightingplace=f"Lat: {lat}, Lon: {long}",sightingphoto="search.jpeg")
+                    data.save(f"sightings/{missingid}_sighting_{datetime.now()}.jpeg")
+                    db.session.add(sighting)
+                    db.session.commit()
+                except Exception as e:
+                    db.session.rollback()
+                    print(e)
+
+                response = jsonify({
+                    "matches_found": True,
+                    "number_of_matches": len(results[0]),
+                    "matched_files": results[0]["identity"].tolist()
+                })
+                print(response.json)
+                return (make_response(response, 200))
+            else:
+                response = jsonify({
+                    "matches_found": False,
+                    "message": "No matches found in database"
+                })
+                print(response.json)
+                return (make_response(response, 200))
+                
+        except Exception as e:
+            print(e)
+            return jsonify({
+                "error": str(e)
+            })
         # missing = Missing.query.filter_by(missing_aadhaar=data['aadhaarId']).all()
         # print(missing)
         # return make_response(jsonify({'missing': [m.serialize() for m in missing]}), 200)
 
 api.add_resource(SearchMissing, '/search_missing')
+
+class Search(Resource):
+    def get(self):  # Added self parameter
+        try:
+            # Specify the path to your database folder
+            db_path = "database_photos"
+            
+            # Use DeepFace.find() to search for matches in the database folder
+            results = DeepFace.find(
+                img_path="r3.jpeg",
+                db_path=db_path
+            )
+            
+            # The results will be a list of pandas DataFrames containing matches
+            if len(results) > 0 and not results[0].empty:
+                response = jsonify({
+                    "matches_found": True,
+                    "number_of_matches": len(results[0]),
+                    "matched_files": results[0]["identity"].tolist()
+                })
+            else:
+                response = jsonify({
+                    "matches_found": False,
+                    "message": "No matches found in database"
+                })
+            return response
+                
+        except Exception as e:
+            return jsonify({
+                "error": str(e)
+            })
+
+
+api.add_resource(Search,'/search')
+
+class search_by_aadhaar(Resource):
+    def post(self):
+        try:
+            data = request.get_json()
+            aadhaar_number = data.get('aadhaar_number')
+            
+            if not aadhaar_number:
+                return jsonify({
+                    'message': 'Aadhaar number is required',
+                    'status': 'error'
+                }), 400
+                
+            # Your database search logic here
+            # This is a mock response
+            try:
+                if Missing.query.filter_by(missing_aadhaar=aadhaar_number).first().status == 'missing':
+                    status = 'missing'
+                elif Missing.query.filter_by(missing_aadhaar=aadhaar_number).first().status == 'sighted':
+                    status = 'sighted'
+                elif Missing.query.filter_by(missing_aadhaar=aadhaar_number).first().status == 'found':
+                    status = 'found'
+            except:
+                status = 'neverlost'
+            
+            return jsonify({
+                'status': status
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'message': str(e),
+                'status': 'error'
+            }), 500
+    
+api.add_resource(search_by_aadhaar, '/search_by_aadhaar')

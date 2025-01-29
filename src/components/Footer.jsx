@@ -12,15 +12,15 @@ function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><a href="/about" className="text-gray-300 hover:text-white">About Us</a></li>
-              <li><a href="/contact" className="text-gray-300 hover:text-white">Contact</a></li>
-              <li><a href="/privacy" className="text-gray-300 hover:text-white">Privacy Policy</a></li>
+              <li><a href="/map" className="text-gray-300 hover:text-white">Map View</a></li>
+              <li><a href="/search" className="text-gray-300 hover:text-white">Search Portal</a></li>
+              <li><a href="/missing" className="text-gray-300 hover:text-white">Missing Persons List</a></li>
             </ul>
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-4">Emergency Contact</h3>
             <p className="text-gray-300">
-              Helpline: 1800-XXX-XXXX<br />
+              Helpline: 1800-01-0011<br />
               Email: help@missingpersonstracker.org
             </p>
           </div>

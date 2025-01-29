@@ -64,12 +64,18 @@ class Missing(db.Model):
     characteristics = db.Column(db.String(1024),nullable=True)
 
     def serialize(self):
+        sighted_place = None
+        if self.status == 'sighted':
+            sighting = Sighting.query.filter_by(missingid=self.missingid).first()
+            if sighting:
+                sighted_place = sighting.sightingplace
+
+                
+                
         return {
             'missingid': self.missingid,
             'missing_aadhaar': self.missing_aadhaar,
-            'missing_person': self.missing_person,
             'informer_aadhaar': self.informer_aadhaar,
-            'informer': self.informer,
             'missingdate': self.missingdate,
             'missingplace': self.missingplace,
             'missingphoto': self.missingphoto,
@@ -77,7 +83,10 @@ class Missing(db.Model):
             'email': self.email,
             'status': self.status,
             'characteristics': self.characteristics,
-            'aadhaarphoto': getattr(self.missing_person, 'aadhaarphoto', None) if self.missing_person else None
+            'aadhaarphoto': Aadhaar.query.filter_by(aadhaarno=self.missing_aadhaar).first().aadhaarphoto,
+            'aadhaarname': Aadhaar.query.filter_by(aadhaarno=self.missing_aadhaar).first().aadhaarname,
+            'informername': Aadhaar.query.filter_by(aadhaarno=self.informer_aadhaar).first().aadhaarname,
+            'sigtedplace': sighted_place
         }
 
 class Found(db.Model):
