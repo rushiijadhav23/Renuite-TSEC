@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Hero from './components/Hero';
 import Map from './components/Map';
+import ReportForm from './components/ReportForm';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
               </>
             } />
             <Route path="/map" element={<Map />} />
+            <Route path="/report" element={<ReportForm />} />
           </Routes>
         </main>
         <Footer />
