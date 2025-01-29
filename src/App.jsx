@@ -3,7 +3,16 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Hero from './components/Hero';
 import Map from './components/Map';
+import SearchPortal from './components/SearchPortal';
 import ReportForm from './components/ReportForm';
+import Login from './components/Auth/Login';
+import Register from './components/Auth/Register';
+import AadhaarForm from './components/Auth/AadhaarForm';
+import MissingPersonMap from './components/MissingPersonMap';
+import FeatureCard from './components/FeatureCard';
+import animationData from "../public/images/Animation - 1738133166117.json"; 
+import animationData1 from "../public/images/Animation - 1738141980756.json"; 
+import animationData2 from "../public/images/Animation - 1738142053285.json"; 
 
 function App() {
   return (
@@ -20,17 +29,17 @@ function App() {
                     <FeatureCard
                       title="Advanced Search"
                       description="Search our comprehensive database of missing persons with detailed filters."
-                      icon="🔍"
+                      animationData={animationData}
                     />
                     <FeatureCard
                       title="Real-Time Reports"
                       description="Report sightings instantly with photo uploads and location tracking."
-                      icon="📱"
+                      animationData={animationData1}
                     />
                     <FeatureCard
                       title="Biometric Verification"
                       description="Secure identification using advanced biometric technology."
-                      icon="👆"
+                      animationData={animationData2}
                     />
                   </div>
                 </div>
@@ -38,6 +47,11 @@ function App() {
             } />
             <Route path="/map" element={<Map />} />
             <Route path="/report" element={<ReportForm />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/aadhaar" element={<AadhaarForm />} />
+            <Route path="/search" element={<SearchPortal />} />
+            <Route path="/missing" element={<MissingPersonMap />} />
           </Routes>
         </main>
         <Footer />
@@ -46,14 +60,6 @@ function App() {
   );
 }
 
-function FeatureCard({ title, description, icon }) {
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="text-4xl mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
-    </div>
-  );
-}
+
 
 export default App;

@@ -1,6 +1,6 @@
 function Footer() {
   return (
-    <footer className="bg-gray-800 text-white">
+    <footer className="bg-[#7E5CAD] text-white">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
@@ -26,7 +26,7 @@ function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-gray-700 text-center">
-          <p className="text-gray-300">© 2024 Missing Persons Tracker. All rights reserved.</p>
+          <p className="text-gray-300">© 2025 Missing Persons Tracker. All rights reserved.</p>
         </div>
       </div>
     </footer>
