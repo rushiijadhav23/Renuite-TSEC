@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { API_BASE_URL } from '../../config/api';
 import { useStore } from '../../store';
+import Lottie from "lottie-react";
+import animationData from "../../../public/images/Animation - 1738169687563.json";
 
 function Login() {
   const [aadhaarId, setAadhaarId] = useState('');
@@ -43,15 +45,18 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow">
+    <div className="bg-gradient-to-b from-[#CDC1FF] to-white min-h-screen p-10 flex items-center justify-center">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              <div className="flex justify-center">
+                <Lottie animationData={animationData} className="w-34 h-34" />
+              </div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-[#A294F9]">
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
-            <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <Link to="/register" className="font-medium text-[#A294F9] hover:text-indigo-500">
               create a new account
             </Link>
           </p>
@@ -74,7 +79,7 @@ function Login() {
                 required
                 value={aadhaarId}
                 onChange={(e) => setAadhaarId(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-[#A294F9] placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-[#A294F9] focus:border-[#A294F9] sm:text-sm"
                 placeholder="Aadhaar ID"
                 maxLength="12"
               />
@@ -88,7 +93,7 @@ function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-[#A294F9] placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-[#A294F9] focus:border-[#A294F9] sm:text-sm"
                 placeholder="Password"
               />
             </div>
@@ -98,7 +103,7 @@ function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#A294F9] hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A294F9]"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>

@@ -28,10 +28,10 @@ function Header() {
                 Search Portal
               </Link>
               <Link to="/report" className="px-3 py-2 rounded-md hover:bg-indigo-700">
-                Report Missing
+                Missing Report
               </Link>
-              <Link to="/verify" className="px-3 py-2 rounded-md hover:bg-indigo-700">
-                Verify Aadhar
+              <Link to="/missing" className="px-3 py-2 rounded-md hover:bg-indigo-700">
+                Missing Persons
               </Link>
               <Link to="/map" className="px-3 py-2 rounded-md hover:bg-indigo-700">
                 Map View

@@ -40,7 +40,7 @@ class Aadhaar(db.Model):
     __TableName__ = 'aadhaar'
     aadhaarid = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False, unique=True)
     aadhaarno = db.Column(db.String(12), nullable=False, unique=True)
-    aadhaargender = db.Column(db.String(12),nulable=False)
+    aadhaargender = db.Column(db.String(12),nullable=False)
     aadhaardob = db.Column(db.Date, nullable=False)
     aadhaarname = db.Column(db.String(100), nullable=False)
     aadhaaraddress = db.Column(db.String(1024), nullable=False)
@@ -58,8 +58,26 @@ class Missing(db.Model):
     missingdate = db.Column(db.Date, nullable=False)
     missingplace = db.Column(db.String(1024), nullable=False)
     missingphoto = db.Column(db.String(1024), nullable=True)
+    contactno = db.Column(db.String(10), nullable=True)
+    email = db.Column(db.String(100), nullable=True)
     status = db.Column(db.String(10), nullable=False)
     characteristics = db.Column(db.String(1024),nullable=True)
+
+    def serialize(self):
+        return {
+            'missingid': self.missingid,
+            'missing_aadhaar': self.missing_aadhaar,
+            'missing_person': self.missing_person,
+            'informer_aadhaar': self.informer_aadhaar,
+            'informer': self.informer,
+            'missingdate': self.missingdate,
+            'missingplace': self.missingplace,
+            'missingphoto': self.missingphoto,
+            'contactno': self.contactno,
+            'email': self.email,
+            'status': self.status,
+            'characteristics': self.characteristics
+        }
 
 class Found(db.Model):
     __tablename__ = 'found'  # Fixed tablename spelling

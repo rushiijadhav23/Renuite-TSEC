@@ -9,10 +9,12 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import AadhaarForm from './components/Auth/AadhaarForm';
 import MissingPersonMap from './components/MissingPersonMap';
+import MissingPerson from './components/MissingPerson';
 import FeatureCard from './components/FeatureCard';
 import animationData from "../public/images/Animation - 1738133166117.json"; 
 import animationData1 from "../public/images/Animation - 1738141980756.json"; 
 import animationData2 from "../public/images/Animation - 1738142053285.json"; 
+
 
 function App() {
   return (
@@ -45,13 +47,14 @@ function App() {
                 </div>
               </>
             } />
-            <Route path="/map" element={<Map />} />
+            <Route path="/map" element={<MissingPersonMap />} />
             <Route path="/report" element={<ReportForm />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/aadhaar" element={<AadhaarForm />} />
             <Route path="/search" element={<SearchPortal />} />
-            <Route path="/missing" element={<MissingPersonMap />} />
+            <Route path="/missing" element={<MissingPerson />} />
+
           </Routes>
         </main>
         <Footer />

@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef} from "react";
 import { Upload, Camera } from "lucide-react";
 import Lottie from "lottie-react";
+import Webcam from "react-webcam";
 import animationData from "./../../public/images/Animation - 1738133166117.json";
 import animationData1 from "./../../public/images/Animation - 1738150811302.json";
 
@@ -8,37 +9,25 @@ function SearchPortal() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [aadharNumber, setAadharNumber] = useState("");
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
+  const webcamRef = useRef(null);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       setSelectedImage(URL.createObjectURL(file));
+      setIsCameraOpen(false);
     }
   };
 
-  const handleOpenCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setIsCameraOpen(true);
-      }
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-    }
+  const handleOpenCamera = () => {
+    setIsCameraOpen(true);
+    setSelectedImage(null);
   };
 
   const handleCaptureImage = () => {
-    if (videoRef.current && canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-      setSelectedImage(canvas.toDataURL("image/png"));
-      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      setSelectedImage(imageSrc);
       setIsCameraOpen(false);
     }
   };
@@ -57,18 +46,40 @@ function SearchPortal() {
                 <Lottie animationData={animationData} className="w-34 h-34" />
               </div>
             )}
-            {isCameraOpen ? (
-              <div className="flex flex-col items-center gap-4">
-                <video ref={videoRef} autoPlay className="rounded-lg shadow-lg max-w-xs mx-auto" />
+            {isCameraOpen && (
+              <div className="box border-4 border-[#A294F9] p-2 rounded-lg">
+                <Webcam
+                  ref={webcamRef}
+                  screenshotFormat="image/jpeg"
+                  className="rounded-lg shadow-lg w-full"
+                />
                 <button
                   onClick={handleCaptureImage}
-                  className="bg-[#A294F9] text-white px-6 py-3 rounded-md flex items-center gap-2 hover:bg-indigo-700"
+                  className="bg-[#A294F9] text-white px-6 py-3 rounded-md flex items-center gap-2 hover:bg-indigo-700 mt-4 mx-auto"
                 >
                   Capture Image
                 </button>
               </div>
-            ) : (
-              <div className="flex flex-col items-center gap-4">
+            )}
+            {selectedImage && !isCameraOpen && (
+              <div className="mt-4">
+                <div className="border-4 border-[#A294F9] p-2 rounded-lg">
+                  <img
+                    src={selectedImage}
+                    alt="Captured or Uploaded"
+                    className="rounded-lg shadow-lg max-w-xs mx-auto"
+                  />
+                </div>
+              </div>
+            )}
+            {!isCameraOpen && (
+              <div className="flex flex-col items-center gap-4 mt-4">
+                <button
+                  onClick={handleOpenCamera}
+                  className="bg-[#A294F9] text-white px-6 py-3 rounded-md flex items-center gap-2 hover:bg-indigo-700"
+                >
+                  <Camera size={20} /> Open Camera
+                </button>
                 <label className="cursor-pointer bg-[#A294F9] text-white px-6 py-3 rounded-md flex items-center justify-center gap-2 hover:bg-indigo-700">
                   <Upload size={20} /> Upload Image
                   <input
@@ -78,27 +89,11 @@ function SearchPortal() {
                     onChange={handleImageUpload}
                   />
                 </label>
-                <button
-                  onClick={handleOpenCamera}
-                  className="bg-[#A294F9] text-white px-6 py-3 rounded-md flex items-center gap-2 hover:bg-indigo-700"
-                >
-                  <Camera size={20} /> Open Camera
-                </button>
               </div>
             )}
-            {selectedImage && !isCameraOpen && (
-              <div className="mt-4">
-                <img
-                  src={selectedImage}
-                  alt="Captured or Uploaded"
-                  className="rounded-lg shadow-lg max-w-xs mx-auto"
-                />
-              </div>
-            )}
-            <canvas ref={canvasRef} className="hidden" />
           </div>
 
-          {/* Search by Aadhaar */}
+          {/* Search by Aadhaar section remains unchanged */}
           <div className="p-6 border border-[#A294F9] rounded-xl text-center">
             <div className="flex justify-center">
               <Lottie animationData={animationData1} className="w-34 h-34" />

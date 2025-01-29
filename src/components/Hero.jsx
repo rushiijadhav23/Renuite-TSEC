@@ -14,7 +14,7 @@ function Hero() {
               href="/report"
               className="rounded-md bg-white px-6 py-3 text-lg font-semibold text-[#A294F9] hover:bg-indigo-50"
             >
-              Report a Sighting
+              Report Missing Person
             </a>
             <a
               href="/search"
