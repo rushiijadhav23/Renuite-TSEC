@@ -1,0 +1,17 @@
+[
+    {"id": 1, "name": "Akanksha Foundation", "latitude": 19.076090, "longitude": 72.877426},
+    {"id": 2, "name": "Goonj", "latitude": 19.084246, "longitude": 72.849007},
+    {"id": 3, "name": "Teach For India", "latitude": 18.975000, "longitude": 72.825800},
+    {"id": 4, "name": "Pratham Education Foundation", "latitude": 19.045000, "longitude": 72.836000},
+    {"id": 5, "name": "SNEHA", "latitude": 19.042200, "longitude": 72.835700},
+    {"id": 6, "name": "CRY (Child Rights and You)", "latitude": 19.076500, "longitude": 72.877700},
+    {"id": 7, "name": "VSO India", "latitude": 19.093000, "longitude": 72.826500},
+    {"id": 8, "name": "Aangan Trust", "latitude": 19.013000, "longitude": 72.847000},
+    {"id": 9, "name": "Magic Bus", "latitude": 19.072000, "longitude": 72.882000},
+    {"id": 10, "name": "Mann Ki Baat Foundation", "latitude": 19.028000, "longitude": 72.847500},
+    {"id": 11, "name": "Udaan", "latitude": 19.021000, "longitude": 72.846000},
+    {"id": 12, "name": "Yuva Unstoppable", "latitude": 19.045500, "longitude": 72.835300},
+    {"id": 13, "name": "Rang De", "latitude": 19.063000, "longitude": 72.855500},
+    {"id": 14, "name": "SankalpTaru Foundation", "latitude": 19.076300, "longitude": 72.877800},
+    {"id": 15, "name": "Asha for Education", "latitude": 19.019000, "longitude": 72.847900}
+]

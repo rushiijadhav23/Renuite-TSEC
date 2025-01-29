@@ -1,0 +1,17 @@
+[
+    {"id": 1, "name": "Chhatrapati Shivaji Terminus Police Station", "latitude": 18.943888, "longitude": 72.835991},
+    {"id": 2, "name": "Chembur Police Station", "latitude": 19.032801, "longitude": 72.896355},
+    {"id": 3, "name": "Dadar Police Station", "latitude": 19.024747, "longitude": 72.835202},
+    {"id": 4, "name": "Andheri Police Station", "latitude": 19.097606, "longitude": 72.831051},
+    {"id": 5, "name": "Borivali Police Station", "latitude": 19.227020, "longitude": 72.850679},
+    {"id": 6, "name": "Malad Police Station", "latitude": 19.189334, "longitude": 72.834494},
+    {"id": 7, "name": "Kandivali Police Station", "latitude": 19.205940, "longitude": 72.850639},
+    {"id": 8, "name": "Ghatkopar Police Station", "latitude": 19.083112, "longitude": 72.926414},
+    {"id": 9, "name": "Sion Police Station", "latitude": 19.033632, "longitude": 72.855174},
+    {"id": 10, "name": "Wadala Police Station", "latitude": 19.015637, "longitude": 72.853241},
+    {"id": 11, "name": "Shivaji Park Police Station", "latitude": 19.030113, "longitude": 72.835049},
+    {"id": 12, "name": "Juhu Police Station", "latitude": 19.097305, "longitude": 72.826830},
+    {"id": 13, "name": "Vile Parle Police Station", "latitude": 19.090450, "longitude": 72.834200},
+    {"id": 14, "name": "Parel Police Station", "latitude": 19.014250, "longitude": 72.839150},
+    {"id": 15, "name": "Mahalaxmi Police Station", "latitude": 18.998300, "longitude": 72.833300}
+]

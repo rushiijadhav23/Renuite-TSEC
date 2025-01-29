@@ -81,7 +81,7 @@ function ReportForm() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Report Missing Person</h2>
+        <h2 className="text-2xl font-bold text-[#A294F9] mb-6">Report Missing Person</h2>
         
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative mb-6">
@@ -99,7 +99,7 @@ function ReportForm() {
                 value={formData.missing_aadhaar}
                 onChange={handleChange}
                 pattern="[0-9]{12}"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="mt-1 block w-full rounded-md border border-[#A294F9] shadow-sm shadow-[0px_4px_10px_rgba(162,148,249,0.5)] focus:border-indigo-500 focus:ring-indigo-500"
                 required
               />
             </div>
@@ -111,12 +111,12 @@ function ReportForm() {
                 name="missingdate"
                 value={formData.missingdate}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="mt-1 block w-full rounded-md border border-[#A294F9]  shadow-sm shadow-[0px_4px_10px_rgba(162,148,249,0.5)] focus:border-indigo-500 focus:ring-indigo-500"
                 required
               />
             </div>
 
-            <div>
+            <div className=''>
               <label className="block text-sm font-medium text-gray-700">Missing Place</label>
               <MapComponent onLocationSelect={handleLocationSelect} />
             </div>
@@ -128,7 +128,7 @@ function ReportForm() {
                 value={formData.characteristics}
                 onChange={handleChange}
                 rows="3"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="mt-1 block w-full rounded-md border border-[#A294F9]  shadow-sm shadow-[0px_4px_10px_rgba(162,148,249,0.5)] focus:border-indigo-500 focus:ring-indigo-500"
                 placeholder="Height, weight, identifying marks, clothing worn when last seen, etc."
               />
             </div>
@@ -141,7 +141,7 @@ function ReportForm() {
                 value={formData.contactno}
                 onChange={handleChange}
                 pattern="[0-9]{10}"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="mt-1 block w-full rounded-md border border-[#A294F9]  shadow-sm shadow-[0px_4px_10px_rgba(162,148,249,0.5)] focus:border-indigo-500 focus:ring-indigo-500"
                 required
               />
             </div>
@@ -153,7 +153,7 @@ function ReportForm() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="mt-1 block w-full rounded-md border border-[#A294F9]  shadow-sm shadow-[0px_4px_10px_rgba(162,148,249,0.5)] focus:border-indigo-500 focus:ring-indigo-500"
                 required
               />
             </div>
@@ -169,8 +169,8 @@ function ReportForm() {
                   file:mr-4 file:py-2 file:px-4
                   file:rounded-md file:border-0
                   file:text-sm file:font-semibold
-                  file:bg-indigo-50 file:text-indigo-700
-                  hover:file:bg-indigo-100"
+                  file:bg-[#A294F9] file:text-white
+                  hover:file:bg-[#E5D9F2]"
                 required
               />
             </div>
@@ -180,7 +180,7 @@ function ReportForm() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              className="bg-[#A294F9] text-white px-6 py-2 shadow-sm shadow-[0px_4px_10px_rgba(162,148,249,0.5)] rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               {loading ? 'Submitting...' : 'Submit Report'}
             </button>

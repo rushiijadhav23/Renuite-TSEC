@@ -1,32 +1,33 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { API_BASE_URL } from "../config/api"; // Importing the base API URL
+import { API_BASE_URL } from "../config/api";
 
 const MissingPerson = () => {
+  const [missingPersons, setMissingPersons] = useState([]);
+
   useEffect(() => {
-    // Function to fetch missing persons data
     const fetchMissingPersons = async () => {
       try {
-        // Fetch data using axios
         const response = await axios.get(`${API_BASE_URL}/missing`);
-        console.log("API Response:", response.data); // Log the response to the console
+        setMissingPersons(response.data.missing);
       } catch (err) {
         console.error("Error fetching missing persons:", err.message);
       }
     };
 
-    fetchMissingPersons(); // Call the function when the component loads
-  }, []); // Empty dependency array ensures this runs only once
+    fetchMissingPersons();
+  }, []);
 
   return (
     <div className="space-y-6">
-      {/* Static UI */}
-      <PersonCard />
+      {missingPersons.map((person) => (
+        <PersonCard key={person.missingid} person={person} />
+      ))}
     </div>
   );
 };
 
-const PersonCard = () => {
+const PersonCard = ({ person }) => {
   return (
     <div className="border-2 border-gray-300 p-6 rounded-lg shadow-lg w-full max-w-7xl mx-auto bg-white">
       <h2 className="text-xl font-bold text-center mb-4 text-[#A294F9]">
@@ -34,44 +35,63 @@ const PersonCard = () => {
       </h2>
 
       <div className="flex gap-6 items-center rounded-xl shadow-sm bg-gray-50 p-4">
-        {/* Image Boxes */}
-        <div className="w-40 h-40 border-2 border-gray-300 rounded-lg flex items-center justify-center">
-          <span className="text-gray-400">No Image</span>
+        <div className="w-40 h-40 border-2 border-gray-300 rounded-lg">
+          {person.missingphoto ? (
+            <img 
+              src={`${API_BASE_URL}/image?img=${person.missingphoto}`}
+              alt="Missing Person"
+              className="w-full h-full object-cover rounded-lg"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-gray-400">No Image</span>
+            </div>
+          )}
         </div>
-        <div className="w-40 h-40 border-2 border-gray-300 rounded-lg flex items-center justify-center">
-          <span className="text-gray-400">No Image</span>
+        <div className="w-40 h-40 border-2 border-gray-300 rounded-lg">
+          {person.missingphoto ? (
+            <img 
+              src={`${API_BASE_URL}/image?img=${person.missingphoto}`}
+              alt="Missing Person"
+              className="w-full h-full object-cover rounded-lg"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-gray-400">No Image</span>
+            </div>
+          )}
         </div>
 
-        {/* Information Section */}
         <div className="flex-grow grid grid-cols-3 gap-6 p-4">
           <div className="p-4 rounded-lg">
             <strong className="block text-gray-700">Missing Person:</strong>
-            Unknown
+            {person.missing_person || 'Unknown'}
             <br />
             <strong className="block text-gray-700">Informer:</strong>
-            Unknown
+            {person.informer || 'Unknown'}
           </div>
           <div className="p-4 rounded-lg">
             <strong className="block text-gray-700">Missing Date:</strong>
-            N/A
+            {new Date(person.missingdate).toLocaleDateString()}
             <br />
             <strong className="block text-gray-700">Missing Place:</strong>
-            N/A
+            {person.missingplace || 'N/A'}
           </div>
           <div className="p-4 rounded-lg">
             <strong className="block text-gray-700">Contact:</strong>
-            N/A
+            {person.contactno || 'N/A'}
             <br />
             <strong className="block text-gray-700">Email:</strong>
-            N/A
+            {person.email || 'N/A'}
           </div>
         </div>
 
-        {/* Status Button */}
         <button
-          className={`px-6 py-3 rounded-lg text-white font-bold shadow-md transition-all bg-red-500 hover:bg-red-600`}
+          className={`px-6 py-3 rounded-lg text-white font-bold shadow-md transition-all ${
+            person.status === 'active' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
+          }`}
         >
-          Not Found
+          {person.status === 'active' ? 'Not Found' : 'Found'}
         </button>
       </div>
     </div>

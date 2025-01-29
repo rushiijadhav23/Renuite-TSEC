@@ -6,11 +6,14 @@ from resources import api
 from models import db
 import pickle
 import math
+from datetime import datetime, timedelta
+import random
 
 app = Flask(__name__)
 
 # Enable CORS for all routes and origins
 CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 
 app.config.from_object(DevelopmentConfig)
@@ -112,7 +115,110 @@ def get_search_zones():
     zones = calculate_search_zones(lat, lng, time_elapsed, age, gender)
     return jsonify(zones)
 
+def is_point_in_zone(point_lat, point_lng, center_lat, center_lng, radius):
+    """Calculate if a point falls within a circular zone"""
+    R = 6371000  # Earth's radius in meters
+    
+    dlat = math.radians(point_lat - center_lat)
+    dlng = math.radians(point_lng - center_lng)
+    
+    a = (math.sin(dlat/2) * math.sin(dlat/2) +
+         math.cos(math.radians(center_lat)) * math.cos(math.radians(point_lat)) *
+         math.sin(dlng/2) * math.sin(dlng/2))
+    
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    distance = R * c
+    
+    return distance <= radius
 
+def get_mock_missing_persons(lat, lng, count=10):
+    """Generate mock missing persons data around a location"""
+    persons = []
+    for i in range(count):
+        # Generate random coordinates within ~5km
+        dlat = random.uniform(-0.05, 0.05)
+        dlng = random.uniform(-0.05, 0.05)
+        
+        age = random.randint(5, 80)
+        hours_missing = random.randint(1, 72)
+        
+        persons.append({
+            "id": i + 1,
+            "name": f"Person {i+1}",
+            "age": age,
+            "gender": random.choice(["Male", "Female"]),
+            "last_seen_lat": lat + dlat,
+            "last_seen_lng": lng + dlng,
+            "time_elapsed": hours_missing,
+            "last_seen": (datetime.now() - timedelta(hours=hours_missing)).isoformat(),
+            "description": f"Missing person {i+1} description"
+        })
+    return persons
+
+@app.route("/api/organization/<org_type>/<int:org_id>/dashboard", methods=["GET"])
+def get_organization_dashboard(org_type, org_id):
+    """Get dashboard data for police station or NGO"""
+    # Mock data generation
+    total_missing = random.randint(50, 200)
+    
+    # Generate mock missing persons
+    missing_persons = get_mock_missing_persons(request.args.get("lat", type=float),
+                                             request.args.get("lng", type=float))
+    
+    # Calculate zones for each person
+    high_priority = []
+    medium_priority = []
+    low_priority = []
+    
+    for person in missing_persons:
+        time_elapsed = person["time_elapsed"]
+        zones = calculate_search_zones(
+            person["last_seen_lat"],
+            person["last_seen_lng"],
+            time_elapsed * 60,  # Convert hours to minutes
+            person["age"],
+            person["gender"]
+        )
+        
+        org_lat = float(request.args.get("lat"))
+        org_lng = float(request.args.get("lng"))
+        
+        if is_point_in_zone(org_lat, org_lng, person["last_seen_lat"], person["last_seen_lng"], zones[0]["radius"]):
+            high_priority.append(person)
+        elif is_point_in_zone(org_lat, org_lng, person["last_seen_lat"], person["last_seen_lng"], zones[1]["radius"]):
+            medium_priority.append(person)
+        elif is_point_in_zone(org_lat, org_lng, person["last_seen_lat"], person["last_seen_lng"], zones[2]["radius"]):
+            low_priority.append(person)
+    
+    # Generate mock notifications
+    notifications = [
+        {
+            "id": 1,
+            "title": "New Missing Person Report",
+            "message": "A new missing person case has been reported in your area",
+            "timestamp": (datetime.now() - timedelta(minutes=30)).isoformat()
+        },
+        {
+            "id": 2,
+            "title": "Update on Case #123",
+            "message": "New witness information available",
+            "timestamp": (datetime.now() - timedelta(hours=2)).isoformat()
+        },
+        {
+            "id": 3,
+            "title": "Alert: Similar Case Pattern",
+            "message": "Multiple cases reported with similar characteristics",
+            "timestamp": (datetime.now() - timedelta(hours=5)).isoformat()
+        }
+    ]
+    
+    return jsonify({
+        "total_missing_persons": total_missing,
+        "high_priority_cases": high_priority,
+        "medium_priority_cases": medium_priority,
+        "low_priority_cases": low_priority,
+        "notifications": notifications
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)

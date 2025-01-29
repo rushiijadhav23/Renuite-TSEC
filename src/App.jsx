@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Hero from './components/Hero';
-import Map from './components/Map';
 import SearchPortal from './components/SearchPortal';
 import ReportForm from './components/ReportForm';
 import Login from './components/Auth/Login';
@@ -14,6 +13,8 @@ import FeatureCard from './components/FeatureCard';
 import animationData from "../public/images/Animation - 1738133166117.json"; 
 import animationData1 from "../public/images/Animation - 1738141980756.json"; 
 import animationData2 from "../public/images/Animation - 1738142053285.json"; 
+import NgoDashboard from './components/NgoDashboard'
+import PoliceDashboard from './components/PoliceDashboard'
 
 
 function App() {
@@ -54,7 +55,8 @@ function App() {
             <Route path="/aadhaar" element={<AadhaarForm />} />
             <Route path="/search" element={<SearchPortal />} />
             <Route path="/missing" element={<MissingPerson />} />
-
+            <Route path="/police/:id" element={<PoliceDashboard />} />
+            <Route path="/ngo/:id" element={<NgoDashboard />} />
           </Routes>
         </main>
         <Footer />

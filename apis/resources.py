@@ -485,10 +485,20 @@ api.add_resource(SearchZonesResource, '/search_zones')
 
 
 class Image(Resource):
-    def get(self, filename):
-        return send_file('filename', mimetype='image/jpg')
+    def get(self):
+        filename = request.args.get('img')
+        print(filename)
+        print(os.path.join(filename))
+        if os.path.exists(filename):
+                print(f"File size: {os.path.getsize(filename)} bytes")
+                return send_file(filename, mimetype='image/jpeg')
+        else:
+            print(f"File not found: {filename}")
+            return {"error": "File not found"}, 404
+        # return Response(filename, mimetype="image/jpeg")
     
-api.add_resource(Image, '/image/<string:filename>')
+api.add_resource(Image, '/image')
+
 
 class MissingList(Resource):
     def get(self):
@@ -498,3 +508,14 @@ class MissingList(Resource):
         return make_response(jsonify({'missing': [m.serialize() for m in missing]}), 200)
     
 api.add_resource(MissingList, '/missing')
+
+class SearchMissing(Resource):
+    def post(self):
+        data = request.files['image']
+        print(data)
+        return "hi"
+        # missing = Missing.query.filter_by(missing_aadhaar=data['aadhaarId']).all()
+        # print(missing)
+        # return make_response(jsonify({'missing': [m.serialize() for m in missing]}), 200)
+
+api.add_resource(SearchMissing, '/search_missing')

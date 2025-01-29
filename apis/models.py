@@ -76,7 +76,8 @@ class Missing(db.Model):
             'contactno': self.contactno,
             'email': self.email,
             'status': self.status,
-            'characteristics': self.characteristics
+            'characteristics': self.characteristics,
+            'aadhaarphoto': getattr(self.missing_person, 'aadhaarphoto', None) if self.missing_person else None
         }
 
 class Found(db.Model):
