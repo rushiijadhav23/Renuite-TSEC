@@ -238,8 +238,8 @@ db.init_app(app)
 from models import Missing, Sighting
 from flask import jsonify, make_response
 
-account_sid = 'ACb2b934bcd3f5161dda29620d1080d181'
-auth_token = '783d763595eef8b2441548ed71d8f137'
+account_sid = 'Enter your account SID here'
+auth_token = 'Enter your auth token here'
 client = Client(account_sid, auth_token)
 
 
