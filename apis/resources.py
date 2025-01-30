@@ -13,9 +13,272 @@ from datetime import datetime, timedelta
 from config import DevelopmentConfig
 import uuid
 from functools import wraps
+import joblib
+import math
+import random
+import numpy as np
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """
+    Calculate the Haversine distance between two points on the earth.
+    """
+    R = 6371  # Radius of the earth in km
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2) * math.sin(dlat / 2) + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) * math.sin(dlon / 2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    distance = R * c  # Distance in km
+    return distance
 
 
 api=Api(prefix='/api')
+
+def assign_age_group(age):
+    if age < 13:
+        return 'Child (0-12)'
+    elif age < 20:
+        return 'Teen (13-19)'
+    elif age < 40:
+        return 'Young Adult (20-39)'
+    elif age < 60:
+        return 'Middle Age (40-59)'
+    elif age < 80:
+        return 'Senior (60-79)'
+    else:
+        return 'Elderly (80+)'
+
+# Default walking speed based on age and gender
+def get_walk_speed_default(age, gender):
+    """
+    Returns a default walking speed based on age and gender.
+    """
+    if age < 13:
+        return 3 if gender == 'female' else 3.5  # Children walking speed based on gender
+    elif age < 20:
+        return 4.5 if gender == 'female' else 5  # Teens walking speed based on gender
+    elif age < 40:
+        return 5 if gender == 'female' else 5.5  # Young adults walking speed based on gender
+    elif age < 60:
+        return 4.5 if gender == 'female' else 5  # Middle age walking speed based on gender
+    elif age < 80:
+        return 3.5 if gender == 'female' else 4  # Seniors walking speed based on gender
+    else:
+        return 3 if gender == 'female' else 3.5  # Elderly walking speed based on gender
+
+# Default running speed based on age and gender
+def get_run_speed_based_on_age(age, gender):
+    """
+    Returns a realistic running speed (in km/h) based on age and gender.
+    """
+    if age < 13:
+        return 7 if gender == 'female' else 8  # Children running speed based on gender
+    elif age < 20:
+        return 9 if gender == 'female' else 10  # Teens running speed based on gender
+    elif age < 40:
+        return 10 if gender == 'female' else 11  # Young adults running speed based on gender
+    elif age < 60:
+        return 8 if gender == 'female' else 9  # Middle age running speed based on gender
+    elif age < 80:
+        return 6 if gender == 'female' else 7  # Seniors running speed based on gender
+    else:
+        return 4 if gender == 'female' else 5  # Elderly running speed based on gender
+
+# Calculate search zones based on last seen time, age, and gender
+def calculate_search_zones(lat, lng, time_elapsed, age, gender):
+    """
+    Computes three probability zones based on the time elapsed since last seen.
+    """
+    # Get walking speed based on age and gender
+    speed_walk = get_walk_speed_default(age, gender)
+
+    # Get running speed based on age and gender
+    speed_run = get_run_speed_based_on_age(age, gender)
+    
+    time_hours = time_elapsed / 60.0  # Convert minutes to hours
+
+    # Calculate search zones based on walking speed and time elapsed
+    zones = [
+        {"radius": speed_walk * time_hours * 1000, "color": "red"},      # Highly probable
+        {"radius": speed_walk * time_hours * 2000, "color": "orange"},    # Less probable
+        {"radius": speed_run * time_hours * 1000, "color": "yellow"}     # Least probable
+    ]
+
+    return zones
+
+# Flask-RESTful resource class for search zones
+class SearchZonesResource(Resource):
+    def get(self):
+        """
+        Endpoint to fetch probable zones based on last seen time, age, and gender.
+        """
+        lat = float(request.args.get("lat"))
+        lng = float(request.args.get("lng"))
+        time_elapsed = float(request.args.get("timeElapsed"))
+        age = int(request.args.get("age"))
+        gender = request.args.get("gender")
+
+        # Get search zones based on lat, lng, time, age, and gender
+        zones = calculate_search_zones(lat, lng, time_elapsed, age, gender)
+        return jsonify(zones)
+
+# Add the resource to the API
+api.add_resource(SearchZonesResource, '/api/search_zones')
+
+
+def get_priority_cases(cases, org_lat, org_lng):
+    """
+    Categorize cases by priority based on various factors.
+    """
+    high_priority = []
+    medium_priority = []
+    low_priority = []
+
+    for case in cases:
+        # Calculate time elapsed since last seen
+        time_elapsed = (datetime.utcnow() - case.last_seen).total_seconds() / 3600  # hours
+        distance = calculate_distance(org_lat, org_lng, case.last_seen_lat, case.last_seen_lng)
+
+        # Priority scoring based on multiple factors
+        priority_score = 0
+        
+        # Age factor
+        if case.age < 13 or case.age > 60:
+            priority_score += 3
+        elif case.age < 18:
+            priority_score += 2
+        
+        # Time elapsed factor
+        if time_elapsed > 48:
+            priority_score += 3
+        elif time_elapsed > 24:
+            priority_score += 2
+        elif time_elapsed > 12:
+            priority_score += 1
+            
+        # Distance factor
+        if distance < 10:  # Within 10km
+            priority_score += 2
+        elif distance < 20:  # Within 20km
+            priority_score += 1
+
+        case_dict = {
+            'id': case.id,
+            'name': case.name,
+            'age': case.age,
+            'gender': case.gender,
+            'last_seen': case.last_seen.isoformat(),
+            'time_elapsed': round(time_elapsed, 1),
+            'description': case.description,
+            'distance': round(distance, 2)
+        }
+
+        # Categorize based on priority score
+        if priority_score >= 6:
+            high_priority.append(case_dict)
+        elif priority_score >= 3:
+            medium_priority.append(case_dict)
+        else:
+            low_priority.append(case_dict)
+
+    return high_priority, medium_priority, low_priority
+
+class PoliceDashboardResource(Resource):
+    def get(self, id):
+        try:
+            # Get location parameters
+            lat = float(request.args.get('lat'))
+            lng = float(request.args.get('lng'))
+
+            # Get all active missing person cases
+            cases = MissingPerson.query.filter_by(status='active').all()
+
+            # Static notifications for this police station
+            notifications = [
+                {
+                    'id': 1,
+                    'title': 'High Priority Case Alert',
+                    'message': 'A missing person has been reported near your station.',
+                    'timestamp': '2025-01-30T12:00:00'
+                },
+                {
+                    'id': 2,
+                    'title': 'Case Update',
+                    'message': 'The status of case #123 has been updated.',
+                    'timestamp': '2025-01-29T15:30:00'
+                },
+                {
+                    'id': 3,
+                    'title': 'New Evidence Found',
+                    'message': 'New evidence has been submitted for case #456.',
+                    'timestamp': '2025-01-28T10:15:00'
+                }
+            ]
+
+            # Categorize cases by priority
+            high_priority, medium_priority, low_priority = get_priority_cases(cases, lat, lng)
+
+            return {
+                'total_missing_persons': len(cases),
+                'high_priority_cases': high_priority,
+                'medium_priority_cases': medium_priority,
+                'low_priority_cases': low_priority,
+                'notifications': notifications
+            }
+
+        except Exception as e:
+            return {'error': str(e)}, 500
+
+
+class NgoDashboardResource(Resource):
+    def get(self, id):
+        try:
+            # Get location parameters
+            lat = float(request.args.get('lat'))
+            lng = float(request.args.get('lng'))
+
+            # Get all active missing person cases
+            cases = MissingPerson.query.filter_by(status='active').all()
+
+            # Static notifications for this NGO
+            notifications = [
+                {
+                    'id': 1,
+                    'title': 'Volunteer Needed',
+                    'message': 'We need volunteers to assist with search operations.',
+                    'timestamp': '2025-01-30T09:00:00'
+                },
+                {
+                    'id': 2,
+                    'title': 'New Case Alert',
+                    'message': 'A new missing person case has been reported in your area.',
+                    'timestamp': '2025-01-29T13:45:00'
+                },
+                {
+                    'id': 3,
+                    'title': 'Awareness Campaign',
+                    'message': 'Join our awareness campaign this weekend.',
+                    'timestamp': '2025-01-28T08:00:00'
+                }
+            ]
+
+            # Categorize cases by priority
+            high_priority, medium_priority, low_priority = get_priority_cases(cases, lat, lng)
+
+            return {
+                'total_missing_persons': len(cases),
+                'high_priority_cases': high_priority,
+                'medium_priority_cases': medium_priority,
+                'low_priority_cases': low_priority,
+                'notifications': notifications
+            }
+
+        except Exception as e:
+            return {'error': str(e)}, 500
+
+
+# Register the resources
+api.add_resource(PoliceDashboardResource, '/api/organization/police/<int:id>/dashboard')
+api.add_resource(NgoDashboardResource, '/api/organization/ngo/<int:id>/dashboard')
 
 class apiCheck(Resource):
 
@@ -206,12 +469,12 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def save_file(file):
+def save_file(file,path="database_photos"):
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         new_filename = f"{timestamp}_{filename}"
-        filepath = os.path.join(UPLOAD_FOLDER, new_filename)
+        filepath = os.path.join(path, new_filename)
         file.save(filepath)
         return filepath
     return None
@@ -268,7 +531,7 @@ class AadhaarData(Resource):
                 }), 400)
 
             # Save files and get paths
-            aadhaarphoto_path = save_file(aadhaar_photo)
+            aadhaarphoto_path = save_file(aadhaar_photo, path="database_photos")
 
             if not (aadhaarphoto_path):
                 return make_response(jsonify({
@@ -351,7 +614,7 @@ class ReportMissing(Resource):
                     'status': 'error'
                 }), 400)
 
-            photo_path = save_file(missing_photo)
+            photo_path = save_file(missing_photo, path="missing_photos")
             if not photo_path:
                 return make_response(jsonify({
                     'message': 'Invalid file format. Only PNG, JPG, JPEG allowed',
@@ -419,38 +682,6 @@ api.add_resource(ReportMissing, '/report_missing')
 #             "error": str(e)
 #         }), 400
 
-
-# Convert the function to a class-based resource
-class SearchZonesResource(Resource):
-    def calculate_search_zones(self, lat, lng, time_elapsed):
-        """
-        Computes three probability zones based on the time elapsed since last seen.
-        """
-        speed_walk = 5  # km/h
-        speed_run = 10  # km/h
-        time_hours = time_elapsed / 60.0  # Convert minutes to hours
-
-        zones = [
-            {"radius": speed_walk * time_hours * 1000, "color": "red"},      # Highly probable
-            {"radius": speed_run * time_hours * 1000, "color": "orange"},    # Less probable
-            {"radius": speed_run * time_hours * 1500, "color": "yellow"}     # Least probable
-        ]
-
-        return zones
-
-    def get(self):
-        """
-        GET endpoint to fetch probable zones based on last seen time.
-        """
-        lat = float(request.args.get("lat"))
-        lng = float(request.args.get("lng"))
-        time_elapsed = float(request.args.get("timeElapsed"))
-
-        zones = self.calculate_search_zones(lat, lng, time_elapsed)
-        return zones
-
-# Register the resource properly
-api.add_resource(SearchZonesResource, '/search_zones')
 
 
 class Image(Resource):
@@ -613,100 +844,3 @@ api.add_resource(search_by_aadhaar, '/search_by_aadhaar')
 
 
 # whatsapp api _______________________________________________________________________________________________________________________________________whatsapp api
-
-from twilio.rest import Client
-from twilio.twiml.messaging_response import MessagingResponse
-import os
-from werkzeug.utils import secure_filename
-import requests
-import logging
-
-class WhatsApp(Resource):
-    def post():
-        # Configure logger
-        logging.basicConfig(level=logging.INFO)
-        logger = logging.getLogger(__name__)
-
-        # Twilio credentials
-        account_sid = 'ACb34d2d93f8d89ea9cee1191dc2bb4898'
-        auth_token = 'f98ef1c3a78d5e76b62e3ed2ffc439a6'
-        client = Client(account_sid, auth_token)
-
-        global image_expected
-        logger.info("Received WhatsApp request")
-        
-        resp = MessagingResponse()
-        msg = resp.message()
-        responded = False
-
-        # Create upload folder if it doesn't exist
-        if not os.path.exists(UPLOAD_FOLDER):
-            os.makedirs(UPLOAD_FOLDER)
-            logger.info(f"Created upload folder: {UPLOAD_FOLDER}")
-
-        incoming_msg = request.values.get('Body', '').lower().strip()
-        num_media = int(request.values.get('NumMedia', 0))
-
-        # Handle image reception
-        if num_media > 0 and image_expected:
-            media_url = request.values.get('MediaUrl0')
-            media_type = request.values.get('MediaContentType0')
-            
-            if 'image' in media_type:
-                try:
-                    # Generate unique filename
-                    filename = secure_filename(f"whatsapp_image_{request.values.get('MessageSid')}.jpg")
-                    file_path = os.path.join(UPLOAD_FOLDER, filename)
-                    
-                    # Download image using Twilio client for authentication
-                    response = requests.get(
-                        media_url,
-                        auth=(account_sid, auth_token)
-                    )
-                    
-                    logger.info(f"Media download response status: {response.status_code}")
-                    
-                    if response.status_code == 200:
-                        with open(file_path, 'wb') as f:
-                            f.write(response.content)
-                        msg.body('Image saved successfully!')
-                        logger.info(f"Image saved to: {file_path}")
-                    else:
-                        msg.body(f'Failed to save image. Status code: {response.status_code}')
-                        logger.error(f"Failed to download media. Status code: {response.status_code}")
-                    
-                    image_expected = False
-                    return str(resp)
-                    
-                except Exception as e:
-                    logger.error(f"Error processing image: {str(e)}", exc_info=True)
-                    msg.body('Error processing the image. Please try again.')
-                    return str(resp)
-            else:
-                msg.body('Please send an image file.')
-                return str(resp)
-
-        # Handle text commands
-        if 'hi' in incoming_msg:
-            msg.body("Hi! Choose from the following options:\n"
-                    "1. Aadhaar check status\n"
-                    "2. Post sightings\n"
-                    "3. Search by photo")
-            responded = True
-        elif '1' in incoming_msg:
-            msg.body("Enter the Aadhaar number")
-            responded = True
-        elif '2' in incoming_msg:
-            msg.body("Enter the location")
-            responded = True
-        elif '3' in incoming_msg:
-            msg.body("Please send an image")
-            image_expected = True
-            responded = True
-
-        if not responded:
-            msg.body('I only know about coding, sorry!')
-
-        return str(resp)
-
-api.add_resource(WhatsApp, '/whatsapp')

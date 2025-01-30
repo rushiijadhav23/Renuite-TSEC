@@ -13,8 +13,9 @@ import FeatureCard from './components/FeatureCard';
 import animationData from "../public/images/Animation - 1738133166117.json"; 
 import animationData1 from "../public/images/Animation - 1738141980756.json"; 
 import animationData2 from "../public/images/Animation - 1738142053285.json"; 
-import NgoDashboard from './components/NgoDashboard'
-import PoliceDashboard from './components/PoliceDashboard'
+// import NgoDashboard from './components/NgoDashboard'
+// import PoliceDashboard from './components/PoliceDashboard'
+import Dashboard from './pages/Dashboard';
 
 
 function App() {
@@ -55,8 +56,7 @@ function App() {
             <Route path="/aadhaar" element={<AadhaarForm />} />
             <Route path="/search" element={<SearchPortal />} />
             <Route path="/missing" element={<MissingPerson />} />
-            <Route path="/police/:id" element={<PoliceDashboard />} />
-            <Route path="/ngo/:id" element={<NgoDashboard />} />
+            <Route path="/:type/:id" element={<Dashboard />} />
           </Routes>
         </main>
         <Footer />

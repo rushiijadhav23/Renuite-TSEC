@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL } from '../config/api'; // Ensure API_BASE_URL is set correctly
 import axios from "axios";
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -26,21 +26,32 @@ const MissingPersonMap = () => {
 
   const fetchSearchZones = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/search_zones`, {
-        params: lastSeen
-      });
-      setProbabilityZones(response.data);
+      const params = {
+        lat: lastSeen.lat,
+        lng: lastSeen.lng,
+        timeElapsed: lastSeen.timeElapsed > 0 ? lastSeen.timeElapsed : 60, // Default to 60 mins
+        age: lastSeen.age,
+        gender: lastSeen.gender
+      };
+
+      console.log(params);
+      
+      const response = await axios.get(`${API_BASE_URL}/api/search_zones`, { params });
+      console.log(response.data);
+      // Access the 'zones' property from response data
+      setProbabilityZones(response.data || []); // Fallback to empty array
     } catch (error) {
       console.error("Error fetching search zones:", error);
+      setProbabilityZones([]); // Reset on error
     }
   };
 
   return (
-    <div className="text-[#A294F9] p-6">
+    <div className="text-[#A294F9] p-6 bg-gradient-to-b from-[#CDC1FF]">
       <h2 className="text-2xl font-bold mb-4 text-center">Missing Person Locator</h2>
 
       {/* Form Section */}
-      <div className="bg-white p-4 rounded-lg shadow-md">
+      <div className="bg-transparent p-4 rounded-lg shadow-md">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Latitude */}
           <div className="flex flex-col">
@@ -126,7 +137,7 @@ const MissingPersonMap = () => {
           <Marker position={[lastSeen.lat, lastSeen.lng]}>
             <Popup>Last Seen Location</Popup>
           </Marker>
-          {probabilityZones.map((zone, index) => (
+          {probabilityZones?.map((zone, index) => ( // Add optional chaining
             <Circle 
               key={index} 
               center={[lastSeen.lat, lastSeen.lng]} 

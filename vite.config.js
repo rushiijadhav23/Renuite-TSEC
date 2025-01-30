@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: ['b7bf-103-246-224-214.ngrok-free.app'],
+    allowedHosts: ['d93a-103-246-224-214.ngrok-free.app'],
     proxy: {
       "/api": {
         target: "https://spade.tools",

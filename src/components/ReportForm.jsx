@@ -79,8 +79,8 @@ function ReportForm() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-lg p-8">
+    <div className=" mx-auto p-6 bg-gradient-to-b from-[#CDC1FF]">
+      <div className="bg-white mx-auto rounded-lg shadow-lg p-8 w-1/2">
         <h2 className="text-2xl font-bold text-[#A294F9] mb-6">Report Missing Person</h2>
         
         {error && (

@@ -29,39 +29,38 @@ const MissingPerson = () => {
 
 const PersonCard = ({ person }) => {
   return (
-    <div className="border-2 border-gray-300 p-6 rounded-lg shadow-lg w-full max-w-7xl mx-auto bg-white">
+    <div className="border-2 border-gray-300 p-6 rounded-lg shadow-lg w-100%  mx-auto bg-gradient-to-b from-[#CDC1FF]">
       <h2 className="text-xl font-bold text-center mb-4 text-[#A294F9]">
         Missing Person Details
       </h2>
 
       <div className="flex gap-6 items-center rounded-xl shadow-sm bg-gray-50 p-4">
-        <div className="w-40 h-40 border-2 border-gray-300 rounded-lg">
+        {/* Image Containers */}
+        <div className="w-50 h-40 aspect-square border-2 border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100">
           {person.missingphoto ? (
             <img 
               src={`${API_BASE_URL}/image?img=${person.missingphoto}`}
               alt="Missing Person"
-              className="w-50 h-50 object-cover rounded-lg"
+              className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <span className="text-gray-400">No Image</span>
-            </div>
-          )}
-        </div>
-        <div className="w-40 h-40 border-2 border-gray-300 rounded-lg">
-          {person.aadhaarphoto ? (
-            <img 
-              src={`${API_BASE_URL}/image?img=${person.aadhaarphoto}`}
-              alt="Missing Person"
-              className="w-50 h-50 object-cover rounded-lg"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <span className="text-gray-400">No Image</span>
-            </div>
+            <span className="text-gray-400">No Image</span>
           )}
         </div>
 
+        <div className="w-50 h-40 aspect-square border-2 border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100">
+          {person.aadhaarphoto ? (
+            <img 
+              src={`${API_BASE_URL}/image?img=${person.aadhaarphoto}`}
+              alt="Aadhaar"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-gray-400">No Image</span>
+          )}
+        </div>
+
+        {/* Details Section */}
         <div className="flex-grow grid grid-cols-3 gap-6 p-4">
           <div className="p-4 rounded-lg">
             <strong className="block text-gray-700">Missing Person:</strong>
@@ -93,14 +92,15 @@ const PersonCard = ({ person }) => {
           </div>
         </div>
 
+        {/* Status Button */}
         <button
           className={`px-6 py-3 rounded-lg text-white font-bold shadow-md transition-all ${
-          person.status === 'missing' 
-            ? 'bg-red-500 hover:bg-red-600' 
-            : person.status === 'sighted'
-              ? 'bg-yellow-500 hover:bg-yellow-600'
-              : 'bg-green-500 hover:bg-green-600'
-        }`}
+            person.status === 'missing' 
+              ? 'bg-red-500 hover:bg-red-600' 
+              : person.status === 'sighted'
+                ? 'bg-yellow-500 hover:bg-yellow-600'
+                : 'bg-green-500 hover:bg-green-600'
+          }`}
         >
           {person.status === 'missing' ? 'Missing' : person.status === 'sighted' ? 'Sighted' : 'Found'}
         </button>
