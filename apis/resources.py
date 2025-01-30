@@ -610,3 +610,103 @@ class search_by_aadhaar(Resource):
             }), 500
     
 api.add_resource(search_by_aadhaar, '/search_by_aadhaar')
+
+
+# whatsapp api _______________________________________________________________________________________________________________________________________whatsapp api
+
+from twilio.rest import Client
+from twilio.twiml.messaging_response import MessagingResponse
+import os
+from werkzeug.utils import secure_filename
+import requests
+import logging
+
+class WhatsApp(Resource):
+    def post():
+        # Configure logger
+        logging.basicConfig(level=logging.INFO)
+        logger = logging.getLogger(__name__)
+
+        # Twilio credentials
+        account_sid = 'ACb34d2d93f8d89ea9cee1191dc2bb4898'
+        auth_token = 'f98ef1c3a78d5e76b62e3ed2ffc439a6'
+        client = Client(account_sid, auth_token)
+
+        global image_expected
+        logger.info("Received WhatsApp request")
+        
+        resp = MessagingResponse()
+        msg = resp.message()
+        responded = False
+
+        # Create upload folder if it doesn't exist
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+            logger.info(f"Created upload folder: {UPLOAD_FOLDER}")
+
+        incoming_msg = request.values.get('Body', '').lower().strip()
+        num_media = int(request.values.get('NumMedia', 0))
+
+        # Handle image reception
+        if num_media > 0 and image_expected:
+            media_url = request.values.get('MediaUrl0')
+            media_type = request.values.get('MediaContentType0')
+            
+            if 'image' in media_type:
+                try:
+                    # Generate unique filename
+                    filename = secure_filename(f"whatsapp_image_{request.values.get('MessageSid')}.jpg")
+                    file_path = os.path.join(UPLOAD_FOLDER, filename)
+                    
+                    # Download image using Twilio client for authentication
+                    response = requests.get(
+                        media_url,
+                        auth=(account_sid, auth_token)
+                    )
+                    
+                    logger.info(f"Media download response status: {response.status_code}")
+                    
+                    if response.status_code == 200:
+                        with open(file_path, 'wb') as f:
+                            f.write(response.content)
+                        msg.body('Image saved successfully!')
+                        logger.info(f"Image saved to: {file_path}")
+                    else:
+                        msg.body(f'Failed to save image. Status code: {response.status_code}')
+                        logger.error(f"Failed to download media. Status code: {response.status_code}")
+                    
+                    image_expected = False
+                    return str(resp)
+                    
+                except Exception as e:
+                    logger.error(f"Error processing image: {str(e)}", exc_info=True)
+                    msg.body('Error processing the image. Please try again.')
+                    return str(resp)
+            else:
+                msg.body('Please send an image file.')
+                return str(resp)
+
+        # Handle text commands
+        if 'hi' in incoming_msg:
+            msg.body("Hi! Choose from the following options:\n"
+                    "1. Aadhaar check status\n"
+                    "2. Post sightings\n"
+                    "3. Search by photo")
+            responded = True
+        elif '1' in incoming_msg:
+            msg.body("Enter the Aadhaar number")
+            responded = True
+        elif '2' in incoming_msg:
+            msg.body("Enter the location")
+            responded = True
+        elif '3' in incoming_msg:
+            msg.body("Please send an image")
+            image_expected = True
+            responded = True
+
+        if not responded:
+            msg.body('I only know about coding, sorry!')
+
+        return str(resp)
+
+api.add_resource(WhatsApp, '/whatsapp')

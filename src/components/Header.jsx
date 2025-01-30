@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useStore } from '../store';
 import { Search,House, ClipboardMinus, MapPinned, LogIn, NotebookPen, UserSearch, LogOut } from 'lucide-react';
-import VilokanaLogo from "../../public/icons/vilokana_logo.svg"; 
 
 function Header() {
   const user = useStore((state) => state.user);
@@ -13,16 +12,16 @@ function Header() {
   };
 
   return (
-    <header className="bg-[#A294F9] text-white">
+    <header className="bg-[#A294F9] h-20 text-white">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="text-3xl font-bold font-serif">
-            <img src={VilokanaLogo} alt="Vilokana Logo" width={150} />
-            Vilokana
+            <Link to="/" className="text-3xl font-bold font-serif flex items-center">
+            <img className='mt-6' src="../src/assets/vilokana_logo.png" width={110} />
+            
             </Link>
           </div>
-          <div className="hidden md:block">
+          <div className="hidden md:block mt-4">
             <div className="ml-10 flex items-baseline space-x-4 ">
               <Link to="/" className="px-3 py-2 rounded-md hover:bg-indigo-700 flex flex-col items-center">
               <House />

@@ -40,7 +40,7 @@ const PersonCard = ({ person }) => {
             <img 
               src={`${API_BASE_URL}/image?img=${person.missingphoto}`}
               alt="Missing Person"
-              className="w-full h-full object-cover rounded-lg"
+              className="w-50 h-50 object-cover rounded-lg"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -53,7 +53,7 @@ const PersonCard = ({ person }) => {
             <img 
               src={`${API_BASE_URL}/image?img=${person.aadhaarphoto}`}
               alt="Missing Person"
-              className="w-full h-full object-cover rounded-lg"
+              className="w-50 h-50 object-cover rounded-lg"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
