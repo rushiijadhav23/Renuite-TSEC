@@ -59,6 +59,8 @@ Missing persons and children pose a significant societal challenge. Despite effo
 
 ## Architecture
 
+<img width="542" alt="image" src="https://github.com/user-attachments/assets/43bdbd75-f47d-4d32-9e57-4163f4b88253" />
+
 The architecture of **Reunite** is designed to streamline the process of reporting, identifying, and tracking missing persons efficiently. It is structured as follows:
 
 1. **User Registration and Login**
