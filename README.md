@@ -82,10 +82,7 @@ The architecture of **Reunite** is designed to streamline the process of reporti
 5. **Real-Time Mapping and Tracking**
    - Using Leaflet.js, the platform dynamically maps the last known locations and reported sightings, optimizing search areas for better resource allocation.
 
-6. **Multi-Language Support and Accessibility**
-   - The platform provides support for multiple Indian languages, ensuring accessibility and ease of use for diverse users.
-
-7. **Data Security and Privacy**
+6. **Data Security and Privacy**
    - End-to-end encryption is implemented for secure storage of personal and biometric data, maintaining user confidentiality and data integrity. Overview
 The architecture involves:
 - User registration and login integrated with Aadhaar for secure verification.
