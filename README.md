@@ -39,7 +39,7 @@ Missing persons and children pose a significant societal challenge. Despite effo
 - Users and registered family members receive real-time updates on the status of filed complaints.
 - Automated notifications are sent in case of potential matches or new sightings.
 
-### 10. Data Security and Privacy
+### 9. Data Security and Privacy
 - End-to-end encryption is implemented for storing personal and biometric data, ensuring user privacy and security.
 - **Aadhaar Integration**: Secure identity verification and searching.
 - **Facial Recognition**: Matching missing persons with sightings using DeepFace.
