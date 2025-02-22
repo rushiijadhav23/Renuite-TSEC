@@ -109,14 +109,16 @@ The architecture involves:
     ```
 4. Install backend dependencies:
     ```bash
-    cd ../server
+    cd ../apis
     pip install -r requirements.txt
     ```
 5. Run the development servers:
     ```bash
-    npm start    # React Frontend
-    flask run    # Flask Backend
+    npm run dev    # React Frontend
+    python app.py    # Flask Backend
     ```
+6. Add Your Twilio credentials
+7. Make Sure to run the backend on Ngrok, which will be required for Twilio Integration.
 
 ## Achievements
 - Finalist (Top 12) at **TSEC Hacks 2025** - Thadomal Sahani Engineering College, Bandra.
